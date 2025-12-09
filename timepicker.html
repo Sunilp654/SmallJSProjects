@@ -1,0 +1,316 @@
+<html>
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-timepicker/0.5.2/css/bootstrap-timepicker.css"
+        integrity="sha512-E4kKreeYBpruCG4YNe4A/jIj3ZoPdpWhWgj9qwrr19ui84pU5gvNafQZKyghqpFIHHE4ELK7L9bqAv7wfIXULQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer">
+    <!-- <link href="/public/css/invoicestyle.css" rel="stylesheet"> -->
+    <style>
+        .TimePicker {
+            position: relative;
+        }
+
+        .selectTimePicker {
+            position: absolute;
+            z-index: 99;
+            box-shadow: 0px 1px 4px 2px #dfdfdf;
+            background: #fff;
+        }
+
+        .selectTimePicker p.timetext {
+            width: 100%;
+            padding: 5px;
+            background: #f08423;
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 13px !important;
+            color: #fff;
+        }
+
+        .selectTimePicker input {
+            width: 45px;
+            border: 0;
+            height: 40px;
+            text-align: center;
+            margin: 5px;
+        }
+
+        .selectTimePicker input:focus {
+            border: 1px solid #b7b7b7;
+        }
+
+        .selectTimePicker input:focus-visible,
+        .selectTimePicker button:focus {
+            outline: none;
+        }
+
+        .selectTimePicker button {
+            border: 0;
+            background: #f08423;
+            font-size: 22px;
+            padding: 5px 10px;
+        }
+
+        .colonsign {
+            position: absolute;
+            left: 82px;
+        }
+
+        button.okBtn {
+            font-size: 16px;
+            color: #fff;
+            padding: 4px 25px;
+        }
+
+        input.error {
+            border: 1px solid red;
+        }
+
+        .selectDisable button {
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="d-flex justify-content-between flex-column h-100">
+        <div class="container">
+            <div class="row m-0 mt-5">
+                <div class="col-md-6 mx-auto">
+                    <div class="form-group row gap-3 px-3">
+                        <div class="TimePicker w-50">
+                            <input type="text" class="form-control TimePickerDropdown" value="8 : 00 PM" />
+                        </div>
+
+                        <div class="TimePicker w-50">
+                            <input type="text" class="form-control TimePickerDropdown" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mx-auto">
+                    <div class="form-group row gap-3 px-3">
+                        <div class="TimePicker w-50">
+                            <input type="text" class="form-control TimePickerDropdown" value="8 : 00 PM" />
+                        </div>
+
+                        <div class="TimePicker w-50">
+                            <input type="text" class="form-control TimePickerDropdown" />
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+
+    <script>
+        document.addEventListener('click', function (event) {
+            const dropdowns = document.querySelectorAll(".selectTimePicker");
+            dropdowns.forEach((dropdown, index) => {
+                dropdown.style.display = 'none';
+            })
+        });
+
+        var globalTime = '';
+        function setTimeInInput() {
+            let currentTime = new Date();
+            let Hours = currentTime.getHours() > 12 ? currentTime.getHours() % 12 : currentTime.getHours();
+            let AMPM = currentTime.getHours() > 12 ? "PM" : "AM";
+            let Minutes = currentTime.getMinutes() < 10 ? `0${currentTime.getMinutes()}` : `${currentTime.getMinutes()}`;
+            let completeTime = `${Hours} : ${Minutes} ${AMPM}`;
+            return completeTime
+        }
+
+        function timePickerInput() {
+            const item = document.createElement("div");
+            const dropdowns = document.querySelectorAll(".TimePickerDropdown");
+            let currentTime = setTimeInInput();
+            dropdowns.forEach((dropdown, index) => {
+                dropdown.setAttribute("onclick", `timeFocuson(${index})`);
+                dropdown.setAttribute("onfocusout", `timeFocusout(${index})`);
+                dropdown.setAttribute("onkeyup", `timenotChange(${index})`);
+                dropdown.setAttribute("id", `TimePickerId${index}`);
+                if (dropdown.value == "") {
+                    dropdown.value = currentTime;
+                }
+                item.innerHTML = `<div onmouseover="dropdownMouseover(${index})" onclick="showDropDown()" onmouseout="dropdownMouseout(${index})" class="selectTimePicker timeDropDown${index}" style="display:none">
+                                <p class="m-0 timetext">Select Time</p>
+                                <div class="d-flex align-items-center px-3" style="gap: 20px;">
+                                    <div class="Hour d-flex align-items-center flex-column justify-content-center">
+                                        <button class="HourUparrow" onclick="changeHour('increment', ${index})"><i
+                                                class="fa-solid fa-angle-up"></i></button>
+                                        <input type="text" onchange="HourInputChange(${index})" id="hourInput${index}" value="12" >
+                                        <button class="HourDownarrow" onclick="changeHour('decrement', ${index})"><i
+                                                class="fa-solid fa-angle-down"></i></button>
+                                    </div>
+                                    <p class="m-0 colonsign">:</p>
+                                    <div class="Hour d-flex align-items-center flex-column justify-content-center">
+                                        <button class="MinuteUparrow" onclick="changeMinute('increment', ${index})"><i
+                                                class="fa-solid fa-angle-up"></i></button>
+                                        <input type="text" onchange="minuteInputChange(${index})" id="minuteInput${index}" value="00">
+                                        <button class="MinuteDownarrow" onclick="changeMinute('decrement', ${index})"><i
+                                                class="fa-solid fa-angle-down"></i></button>
+                                    </div>
+                                    <div class="Hour d-flex align-items-center flex-column justify-content-center">
+                                        <button class="AMPMUparrow" onclick="toggleAmPm(${index})"><i
+                                                class="fa-solid fa-angle-up"></i></button>
+                                        <input type="text" onchange="AMPMInputChange(${index})" id="ampmInput${index}" value="AM">
+                                        <button class="AMPMDownarrow" onclick="toggleAmPm(${index})"><i
+                                                class="fa-solid fa-angle-down"></i></button>
+                                    </div>
+                                </div>
+                                <p class="text-center my-2"><button class='okBtn' onclick="clcikOK(${index})">Ok</button></p>
+                            </div>`;
+                dropdown.insertAdjacentElement('afterend', item.cloneNode(true));
+            });
+        }
+
+        timePickerInput();
+        function timeFocuson(inputId) {
+            event.stopPropagation();
+            const dropdowns = document.querySelectorAll(".selectTimePicker");
+            dropdowns.forEach((dropdown, index) => {
+                dropdown.style.display = 'none';
+            })
+            globalTime = document.getElementById(`TimePickerId${inputId}`).value;
+            let InputValue = document.getElementById(`TimePickerId${inputId}`).value;
+            let InputValueSsplit = InputValue.split(" ")
+            document.getElementById(`hourInput${inputId}`).value = InputValueSsplit[0];
+            document.getElementById(`minuteInput${inputId}`).value = InputValueSsplit[2];
+            document.getElementById(`ampmInput${inputId}`).value = InputValueSsplit[3];
+            document.getElementById(`hourInput${inputId}`).classList.remove("error");
+            document.getElementById(`minuteInput${inputId}`).classList.remove("error");
+            document.getElementById(`ampmInput${inputId}`).classList.remove("error");
+            document.querySelector(`.timeDropDown${inputId}`).classList.remove("selectDisable");
+            let dropdown = document.querySelector(`.timeDropDown${inputId}`);
+            dropdown.style.display = 'block';
+        }
+        function timenotChange(id){
+            document.getElementById(`TimePickerId${id}`).value = globalTime;
+        }
+        function showDropDown(){
+           event.stopPropagation();
+           
+        }
+
+        function dropdownMouseover(timePickerId) {
+            document.querySelector(`.timeDropDown${timePickerId}`).classList.add("activeDiv");
+        }
+
+        function dropdownMouseout(timePickerId) {
+            document.querySelector(`.timeDropDown${timePickerId}`).classList.remove("activeDiv");
+        }
+
+        function timeFocusout(inputId) {
+            let dropdown = document.querySelector(`.timeDropDown${inputId}`);
+            if (!dropdown.classList.contains('activeDiv')) {
+                dropdown.style.display = 'none';
+            }
+        }
+
+        function changeHour(type, timePickerId) {
+            let hourInput = document.getElementById(`hourInput${timePickerId}`);
+            let hour = parseInt(hourInput.value);
+            if (type == "increment") {
+                hour = hour + 1;
+            }
+            else {
+                hour = hour - 1;
+            }
+
+            if (hour > 12) {
+                hour = 1;
+            } else if (hour < 1) {
+                hour = 12;
+            }
+            hourInput.value = hour.toString(); // Ensure two digits
+            setTime(timePickerId)
+        }
+
+        function changeMinute(type, timePickerId) {
+            let minuteInput = document.getElementById(`minuteInput${timePickerId}`);
+            let minute = parseInt(minuteInput.value);
+            if (type == "increment") {
+                minute = minute + 1;
+            }
+            else {
+                minute = minute - 1;
+            }
+            if (minute > 59) {
+                minute = 0;
+            } else if (minute < 0) {
+                minute = 59;
+            }
+            minuteInput.value = minute.toString().padStart(2, '0'); // Ensure two digits
+            setTime(timePickerId)
+        }
+
+        function toggleAmPm(timePickerId) {
+            let ampmInput = document.getElementById(`ampmInput${timePickerId}`);
+            ampmInput.value = ampmInput.value === "AM" ? "PM" : "AM";
+            setTime(timePickerId)
+        }
+
+        function setTime(timePickerId) {
+            let hour = document.getElementById(`hourInput${timePickerId}`).value;
+            let minute = document.getElementById(`minuteInput${timePickerId}`).value;
+            let ampm = document.getElementById(`ampmInput${timePickerId}`).value;
+            // Set the display input with formatted time
+            document.getElementById(`TimePickerId${timePickerId}`).value = `${hour} : ${minute} ${ampm}`;
+        }
+        function clcikOK(timePickerId) {
+            let dropdown = document.querySelector(`.timeDropDown${timePickerId}`);
+            dropdown.style.display = 'none';
+        }
+
+        function HourInputChange(id) {
+            let numberRegex = /^\d+$/;
+            let InputValue = document.getElementById(`hourInput${id}`).value;
+            let dropdown = document.querySelector(`.timeDropDown${id}`);
+            if (InputValue > 13 || !numberRegex.test(InputValue) || InputValue == "00" || InputValue == "") {
+                document.getElementById(`hourInput${id}`).classList.add("error");
+                dropdown.classList.add('selectDisable')
+            }
+            else {
+                document.getElementById(`hourInput${id}`).classList.remove("error");
+                dropdown.classList.remove('selectDisable')
+                setTime(id);
+            }
+        }
+        function minuteInputChange(id) {
+            let numberRegex = /^\d+$/;
+            let InputValue = document.getElementById(`minuteInput${id}`).value;
+            let dropdown = document.querySelector(`.timeDropDown${id}`);
+            if (InputValue > 59 || !numberRegex.test(InputValue) || InputValue == "") {
+                document.getElementById(`minuteInput${id}`).classList.add("error");
+                dropdown.classList.add('selectDisable')
+            }
+            else {
+                document.getElementById(`minuteInput${id}`).classList.remove("error");
+                dropdown.classList.remove('selectDisable')
+                setTime(id);
+            }
+        }
+        function AMPMInputChange(id) {
+            let InputValue = document.getElementById(`ampmInput${id}`).value;
+            let dropdown = document.querySelector(`.timeDropDown${id}`);
+            if (InputValue == "AM" || InputValue == "PM") {
+                document.getElementById(`ampmInput${id}`).classList.remove("error");
+                dropdown.classList.remove('selectDisable');
+                setTime(id)
+            }
+            else {
+                document.getElementById(`ampmInput${id}`).classList.add("error");
+                dropdown.classList.add('selectDisable');
+            }
+        }
+    </script>
+
+</body>
+</html>
